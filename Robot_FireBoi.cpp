@@ -25,7 +25,7 @@ class Robot_FireBoi : public RobotBase
         // Helper function to add an obstacle to the list if it's not already there
         void add_obstacle(const RadarObj& obj) 
         {
-            if (obj.m_type == 'M' || obj.m_type == 'P' || obj.m_type == 'F' && 
+            if ((obj.m_type == 'M' || obj.m_type == 'P' || obj.m_type == 'F') && 
                 !is_obstacle(obj.m_row, obj.m_col)) 
             {
                 knownObstacles.push_back(obj);
@@ -76,7 +76,9 @@ class Robot_FireBoi : public RobotBase
         {
             // process radar results and update target/obstacles
             targetFound = false; // reset to no target
-            targetRow, targetCol = -1;
+            targetRow = -1;
+            targetCol = -1;
+
             int closest_distance = std::numeric_limits<int>::max();
             int currentRow, currentCol;
             get_current_location(currentRow, currentCol);
@@ -87,7 +89,7 @@ class Robot_FireBoi : public RobotBase
                 add_obstacle(obj);
 
                 // Identify the first enemy found as the target
-                if (obj.m_type == 'R' && targetRow == -1 && targetCol == -1) 
+                if (obj.m_type == 'R' && !(obj.m_row == currentRow && obj.m_col == currentCol)) 
                 {
                     int distance = calculate_distance(currentRow, currentCol, obj.m_row, obj.m_col);
                     if (distance <= maxRange && distance < closest_distance) 
@@ -109,6 +111,15 @@ class Robot_FireBoi : public RobotBase
             // get location for shooting
             if (targetFound)
             {
+                int currentRow, currentCol;
+                get_current_location(currentRow, currentCol);
+
+                // Don't shoot if target is too close or at our location
+                if (targetRow == currentRow && targetCol == currentCol)
+                {
+                    return false; // Don't shoot ourselves
+                }
+
                 shotRow = targetRow;
                 shotCol = targetCol;
                 return true;
@@ -133,7 +144,7 @@ class Robot_FireBoi : public RobotBase
             {
                 // switch to moving right
                 move_direction = 3;
-                move_distance = std::min(move, m_board_row_max - currentRow);
+                move_distance = std::min(move, m_board_col_max - currentCol);
             }
             else
             {

@@ -4,7 +4,7 @@
 
 int main()
 {
-    Arena arena(5,8);
+    Arena arena(10,10);
     arena.placeObstacles();
 
     // list of shared library files for robots
